@@ -16,7 +16,7 @@ app.get('/usuario', (req, res) => {
     let limite = req.query.limite || 5;
     limite = Number(limite);
 
-    Usuario.find({},'nombre email role estado google img') //le puedo indicar qué campos mostrar en la consulta
+    Usuario.find({ estado: true }, 'nombre email role estado google img') //le puedo indicar qué campos mostrar en la consulta
         .skip(desde)
         .limit(limite)
         .exec((err, usuariosDB) => {
@@ -27,12 +27,12 @@ app.get('/usuario', (req, res) => {
                 })
             }
 
-            Usuario.count({}, (err, conteo) => { 
+            Usuario.countDocuments({ estado: true }, (err, conteo) => {
                 res.json({
                     ok: true,
                     usuarios: usuariosDB,
                     cuantos: conteo
-                })                
+                })
             })
         })
 
@@ -71,7 +71,7 @@ app.put('/usuario/:id', (req, res) => {
     let id = req.params.id;
 
     //pick es una funcion de la libreria underscore que sirve 
-    //para indicar qué campos quiero son aceptados en el post
+    //para indicar qué campos son aceptados en el post
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
     Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
@@ -90,9 +90,60 @@ app.put('/usuario/:id', (req, res) => {
     })
 });
 
-app.delete('/usuario', (req, res) => {
-    res.json('delete Uusuario')
+app.delete('/usuario/:id', (req, res) => {
+    let id = req.params.id;
+
+    Usuario.findByIdAndUpdate({ _id: id, estado: true }, { estado: false }, { new: true }, (err, usuarioBorrado) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+
+        if (!usuarioBorrado) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'Usuario no encontrado'
+                }
+            })
+        }
+
+        res.json({
+            ok: true,
+            usuario: usuarioBorrado
+        })
+
+    })
+
 })
+
+
+/* app.delete('/usuario/:id', (req, res) => {
+    let id = req.params.id;
+
+    Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
+            });
+        }
+        if (!usuarioBorrado) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'Usuario no encontrado'
+                }
+            })
+        }
+        res.json({
+            ok: true,
+            usuarioBorrado
+        })
+    })   
+}) */
 
 
 module.exports = app;
