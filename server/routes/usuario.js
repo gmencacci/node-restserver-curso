@@ -1,14 +1,17 @@
 
 const express = require('express')
-const app = express()
 
 const bcrypt = require('bcrypt');
+
 const _ = require('underscore');
+
 const Usuario = require('../models/usuario');
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/autentication');
+
+const app = express();
 
 
-
-app.get('/usuario', (req, res) => {
+app.get('/usuario', verificaToken, (req, res) => {
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -39,10 +42,9 @@ app.get('/usuario', (req, res) => {
     //res.json({ nombre: 'german mencacci2', edad: 42, email: 'mencacci_german@hotmasil.com' })
 });
 
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
 
     let body = req.body;
-
 
     let usuario = new Usuario({
         nombre: body.nombre,
@@ -67,7 +69,7 @@ app.post('/usuario', (req, res) => {
 
 });
 
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
     //pick es una funcion de la libreria underscore que sirve 
@@ -90,7 +92,7 @@ app.put('/usuario/:id', (req, res) => {
     })
 });
 
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
     Usuario.findByIdAndUpdate({ _id: id, estado: true }, { estado: false }, { new: true }, (err, usuarioBorrado) => {
@@ -119,31 +121,6 @@ app.delete('/usuario/:id', (req, res) => {
 
 })
 
-
-/* app.delete('/usuario/:id', (req, res) => {
-    let id = req.params.id;
-
-    Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                err
-            });
-        }
-        if (!usuarioBorrado) {
-            return res.status(400).json({
-                ok: false,
-                err: {
-                    message: 'Usuario no encontrado'
-                }
-            })
-        }
-        res.json({
-            ok: true,
-            usuarioBorrado
-        })
-    })   
-}) */
 
 
 module.exports = app;

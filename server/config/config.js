@@ -1,19 +1,23 @@
-
-
-
 //====================================
 //Puerto
 //====================================
 process.env.PORT = process.env.PORT || 3000;
 
+//====================================
+//Vencimiento del Token
+//====================================
+process.env.CADUCIDAD_TOKEN = 60 * 60 * 24 * 30;
 
+//====================================
+//SEED: semilla de autenticación
+//====================================
+process.env.SEED = process.env.SEED || 'este-es-el-seed-desarrollo';
 
 //====================================
 //Entorno
 //====================================
 //process.env.NODE_ENV: es una variable que setea Heroku
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
-
 
 //====================================
 //Base de datos
@@ -25,6 +29,5 @@ if (process.env.NODE_ENV === 'dev') {
 } else {
     urlDB = process.env.MONGO_URI;
 }
-
 
 process.env.URLDB = urlDB;
