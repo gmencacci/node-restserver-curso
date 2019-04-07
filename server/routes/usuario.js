@@ -1,20 +1,17 @@
 const express = require('express')
-const app = express()
 
 const bcrypt = require('bcrypt');
+
 const _ = require('underscore');
+
 const Usuario = require('../models/usuario');
 
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/autentication');
+
+const app = express();
 
 
-
-
-
-
-
-
-//obtiene una lista de usuario
-app.get('/usuario', (req, res) => {
+app.get('/usuario', verificaToken, (req, res) => {
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -22,7 +19,7 @@ app.get('/usuario', (req, res) => {
     let limite = req.query.limite || 5;
     limite = Number(limite);
 
-    Usuario.find({}, 'nombre email role estado google img') //le puedo indicar qué campos mostrar en la consulta
+    Usuario.find({ estado: true }, 'nombre email role estado google img') //le puedo indicar qué campos mostrar en la consulta
         .skip(desde)
         .limit(limite)
         .exec((err, usuariosDB) => {
@@ -33,7 +30,7 @@ app.get('/usuario', (req, res) => {
                 })
             }
 
-            Usuario.count({}, (err, conteo) => {
+            Usuario.countDocuments({ estado: true }, (err, conteo) => {
                 res.json({
                     ok: true,
                     usuarios: usuariosDB,
@@ -41,11 +38,12 @@ app.get('/usuario', (req, res) => {
                 })
             })
         })
+
+    //res.json({ nombre: 'german mencacci2', edad: 42, email: 'mencacci_german@hotmasil.com' })
 });
 
+app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
 
-//crea un registro usuario
-app.post('/usuario', (req, res) => {
     let body = req.body;
 
     let usuario = new Usuario({
@@ -71,17 +69,14 @@ app.post('/usuario', (req, res) => {
 
 });
 
-
-//modifica un registro usuario
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
     //pick es una funcion de la libreria underscore que sirve 
     //para indicar qué campos son aceptados en el post
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
-    let opciones = { new: true, runValidators: true };
 
-    Usuario.findByIdAndUpdate(id, body, opciones, (err, usuarioDB) => {
+    Usuario.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, usuarioDB) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -97,10 +92,10 @@ app.put('/usuario/:id', (req, res) => {
     })
 });
 
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
-    Usuario.findByIdAndRemove(id, (err, usuarioBorrado) => {
+    Usuario.findByIdAndUpdate({ _id: id, estado: true }, { estado: false }, { new: true }, (err, usuarioBorrado) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -117,18 +112,15 @@ app.delete('/usuario/:id', (req, res) => {
             })
         }
 
-
-
-
-        res.json(200, {
+        res.json({
             ok: true,
-            usuarioBorrado
+            usuario: usuarioBorrado
         })
 
     })
 
-    //res.json('delete Uusuario')
 })
+
 
 
 module.exports = app;
