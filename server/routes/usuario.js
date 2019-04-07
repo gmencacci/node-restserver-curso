@@ -6,6 +6,13 @@ const _ = require('underscore');
 const Usuario = require('../models/usuario');
 
 
+
+
+
+
+
+
+
 //obtiene una lista de usuario
 app.get('/usuario', (req, res) => {
 
