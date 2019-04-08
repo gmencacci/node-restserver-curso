@@ -11,6 +11,9 @@ const { verificaToken, verificaAdmin_Role } = require('../middlewares/autenticat
 const app = express();
 
 
+
+
+
 app.get('/usuario', verificaToken, (req, res) => {
 
     let desde = req.query.desde || 0;
