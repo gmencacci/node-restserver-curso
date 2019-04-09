@@ -18,7 +18,7 @@ let usuarioSchema = new Schema({
     },
     password: {
         type: String,
-        required: [true, 'La conntraseña es obligatoria']
+        required: [true, 'La contraseña es obligatoria']
     },
     img: {
         type: String,

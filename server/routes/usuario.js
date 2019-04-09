@@ -41,8 +41,6 @@ app.get('/usuario', verificaToken, (req, res) => {
                 })
             })
         })
-
-    //res.json({ nombre: 'german mencacci2', edad: 42, email: 'mencacci_german@hotmasil.com' })
 });
 
 app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
@@ -86,8 +84,6 @@ app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
                 err
             });
         }
-
-
         res.json({
             ok: true,
             usuario: usuarioDB
